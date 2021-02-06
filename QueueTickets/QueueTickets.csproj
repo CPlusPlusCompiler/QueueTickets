@@ -11,6 +11,13 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.8" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.2">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.2" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
     </ItemGroup>
 
     <ItemGroup>
@@ -24,6 +31,17 @@
     <ItemGroup>
       <TypeScriptCompile Include="ClientApp\src\App.tsx" />
       <TypeScriptCompile Include="ClientApp\src\index.tsx" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Migrations" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Migrations\20210206153216_InitialPostgreSQL.Designer.cs" />
+      <Compile Remove="Migrations\20210206153532_InitialPostgreSQL.cs" />
+      <Compile Remove="Migrations\20210206153532_InitialPostgreSQL.Designer.cs" />
+      <Compile Remove="Migrations\TicketContextModelSnapshot.cs" />
     </ItemGroup>
 
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
