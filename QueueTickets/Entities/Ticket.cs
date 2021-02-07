@@ -22,21 +22,32 @@ namespace QueueTickets.Entities
         public DateTime PlannedEndTime { get; set; } 
         
         /// <summary> What time the visit actually started </summary>
-        public DateTime StartTime { get; set; }
+        public DateTime? StartTime { get; set; }
         
         /// <summary> What time the visit actually ended </summary>
-        public DateTime EndTime { get; set; }
+        public DateTime? EndTime { get; set; }
+       
+        [ForeignKey("Specialists")]
+        public long SpecialistId { get; set; }
         
+        [Required]
+        public string CustomerName { get; set; }
+
         [Required]
         public ReservationStatus Status { get; set; }
         public Ticket() {}
 
-        public Ticket(string uuid, long ticketNumber, DateTime plannedStartTime, DateTime plannedEndTime)
+        public Ticket(string uuid, long ticketNumber, DateTime plannedStartTime, DateTime plannedEndTime,
+            long specialistId, string customerName)
         {
             Uuid = uuid;
             TicketNumber = ticketNumber;
             PlannedStartTime = plannedStartTime;
             PlannedEndTime = plannedEndTime;
+            StartTime = null;
+            EndTime = null;
+            SpecialistId = specialistId;
+            CustomerName = customerName;
             Status = ReservationStatus.WAITING;
         }
     }

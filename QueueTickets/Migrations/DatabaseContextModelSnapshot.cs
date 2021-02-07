@@ -8,8 +8,8 @@ using QueueTickets.Models;
 
 namespace QueueTickets.Migrations
 {
-    [DbContext(typeof(TicketContext))]
-    partial class TicketContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(DatabaseContext))]
+    partial class DatabaseContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -48,7 +48,11 @@ namespace QueueTickets.Migrations
                     b.Property<string>("Uuid")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("EndTime")
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("PlannedEndTime")
@@ -57,7 +61,10 @@ namespace QueueTickets.Migrations
                     b.Property<DateTime>("PlannedStartTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("StartTime")
+                    b.Property<long>("SpecialistId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("StartTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
@@ -67,6 +74,8 @@ namespace QueueTickets.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Uuid");
+
+                    b.HasIndex("SpecialistId");
 
                     b.ToTable("Tickets");
                 });
@@ -81,15 +90,45 @@ namespace QueueTickets.Migrations
                     b.Property<int>("DayOfWeek")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime2");
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
 
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
+                    b.Property<long>("SpecialistId")
+                        .HasColumnType("bigint");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
 
                     b.HasKey("Id");
 
-                    b.ToTable("DaySchedules");
+                    b.HasIndex("SpecialistId");
+
+                    b.ToTable("WorkSchedules");
+                });
+
+            modelBuilder.Entity("QueueTickets.Entities.Ticket", b =>
+                {
+                    b.HasOne("QueueTickets.Entities.Specialist", null)
+                        .WithMany("Tickets")
+                        .HasForeignKey("SpecialistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("QueueTickets.Entities.WorkSchedule", b =>
+                {
+                    b.HasOne("QueueTickets.Entities.Specialist", null)
+                        .WithMany("WorkSchedules")
+                        .HasForeignKey("SpecialistId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("QueueTickets.Entities.Specialist", b =>
+                {
+                    b.Navigation("Tickets");
+
+                    b.Navigation("WorkSchedules");
                 });
 #pragma warning restore 612, 618
         }

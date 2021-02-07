@@ -8,7 +8,7 @@ using QueueTickets.Models;
 
 namespace QueueTickets.Migrations
 {
-    [DbContext(typeof(TicketContext))]
+    [DbContext(typeof(DatabaseContext))]
     [Migration("20210206164750_InitialSQL")]
     partial class InitialSQL
     {

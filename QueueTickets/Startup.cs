@@ -24,7 +24,7 @@ namespace QueueTickets
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddDbContext<TicketContext>(options =>
+            services.AddDbContext<DatabaseContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddScoped<ITicketsRepository, TicketsRepository>();
             
