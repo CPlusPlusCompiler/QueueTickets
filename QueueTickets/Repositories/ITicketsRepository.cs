@@ -10,5 +10,7 @@ namespace QueueTickets.Repositories
 
         public Task<List<Ticket>> GetTickets(int dayOfWeek);
         public Task<Specialist> GetSpecialistWithData(long specialistId, int dayOfWeek);
+
+        public Task CancelMeeting(string uuid);
     }
 }
