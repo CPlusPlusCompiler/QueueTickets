@@ -30,6 +30,9 @@ namespace QueueTickets.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("PasswordId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Surname")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -39,6 +42,8 @@ namespace QueueTickets.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("PasswordId");
 
                     b.ToTable("Specialists");
                 });
@@ -104,6 +109,35 @@ namespace QueueTickets.Migrations
                     b.HasIndex("SpecialistId");
 
                     b.ToTable("WorkSchedules");
+                });
+
+            modelBuilder.Entity("QueueTickets.Models.SpecialistPassword", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<string>("Hash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Salt")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SpecialistPasswords");
+                });
+
+            modelBuilder.Entity("QueueTickets.Entities.Specialist", b =>
+                {
+                    b.HasOne("QueueTickets.Models.SpecialistPassword", "Password")
+                        .WithMany()
+                        .HasForeignKey("PasswordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Password");
                 });
 
             modelBuilder.Entity("QueueTickets.Entities.Ticket", b =>

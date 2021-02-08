@@ -8,6 +8,7 @@ namespace QueueTickets.Models
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Specialist> Specialists { get; set; }
         public DbSet<WorkSchedule> WorkSchedules { get; set; }
+        public DbSet<SpecialistPassword> Passwords { get; set; }
 
         public DatabaseContext(DbContextOptions options): base(options)
         {

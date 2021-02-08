@@ -28,9 +28,7 @@ namespace QueueTickets.Repositories
             var specialist = await _context.Specialists
                 .Where(s => s.Id == specialistId)
                 .Include(s => s.WorkSchedules.Where(sc => sc.DayOfWeek >= dayOfWeek))
-                .Include(s => s.Tickets.Where(t => t.Status == ReservationStatus.WAITING)
-                    .OrderBy(t => t.EndTime)
-                    .ThenBy(t => t.PlannedEndTime))
+                .Include(s => s.Tickets.Where(t => t.Status == ReservationStatus.WAITING))
                 .FirstAsync();
 
             return  specialist;
@@ -52,6 +50,13 @@ namespace QueueTickets.Repositories
             return tickets;
         }
 
+        public async Task CancelMeeting(string uuid)
+        {
+            var ticket = new Ticket() { Uuid = uuid };
+            ticket.Status = ReservationStatus.CANCELLED;
+            _context.Entry(ticket).Property("Status").IsModified = true;
+            await _context.SaveChangesAsync();
+        }
 
         // public async Task<IEnumerable<Ticket>> GetActiveTickets()
         // {
