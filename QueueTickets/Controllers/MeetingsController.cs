@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +15,12 @@ namespace QueueTickets.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [AllowAnonymous]
     public class MeetingsController : ControllerBase
     {
         private readonly ITicketsRepository _repo;
         private readonly int DEFAULT_MEETING_LENGTH = 40;
+        private readonly string NO_TIME_LEFT = "Sorry, we could not find a time for meeting today.";
 
         public MeetingsController(ITicketsRepository repo)
         {
@@ -24,72 +28,104 @@ namespace QueueTickets.Controllers
         }
         
 
-        // todo pakeisti šitą nesąmonę pagal emailą
-        [HttpPost("BookMeeting"), Authorize]
-        public async Task<IActionResult> BookMeeting([FromBody] BookMeetingRequest data)
+        [HttpPost("BookMeeting")]
+        public async Task<IActionResult> BookMeeting([FromBody] string customerName)
         {
             try
             {
-                var date = DateTime.Today;
+                var date = DateTime.Now;
 
                 // I am using my local week format, so Monday is 1 and Sunday is 7
                 var dayOfWeek = date.DayOfWeek.ToLocalDayOfWeek();
-
-                var specialistWithData = await _repo.GetSpecialistWithData(data.SpecialistId, dayOfWeek);
-                if (!specialistWithData.WorkSchedules.Any())
+                
+                var specialistsWithData = await _repo.GetSpecialistsWithData(dayOfWeek, date.TimeOfDay);
+                DateTime? earliestTime = null;
+                var foundTime = false;
+                var specialistId = 0L;
+                
+                foreach (var specialist in specialistsWithData)
                 {
-                    // todo find a proper statusCode
-                    return new ObjectResult("Selected specialist has no schedules registered") {StatusCode = 500};
-                }
-                         
-                var newNumber = 1L;
-                DateTime? plannedStartTime = null;
-                DateTime? plannedEndTime = null;
-
-                var schedules = specialistWithData.WorkSchedules;
-                DateTime lastEndTime;
-
-                if (specialistWithData.Tickets.Any())
-                {
-                    lastEndTime = specialistWithData.Tickets.Max(s => s.EndTime ?? s.PlannedEndTime);
-                    var largestNumber = specialistWithData.Tickets.Max(s => s.TicketNumber);
-                    newNumber = largestNumber + 1L;
-                }
-                else
-                {
-                    // todo queryje atrinkti tik ateities schedules.
-                    var time = specialistWithData.WorkSchedules.First().StartTime;
-                    lastEndTime = date.Add(time);
-                }
-
-                for (int i = 0; i < schedules.Count(); i++)
-                {
-                    var tempEndTime = lastEndTime.AddMinutes(DEFAULT_MEETING_LENGTH);
-
-                    // todo ideti paklaida
-                    // todo i diena neatsizvelgia...
-                    if (tempEndTime.TimeOfDay >= schedules.ElementAt(i).EndTime)
-                    {
-                        plannedStartTime = lastEndTime;
-                        plannedEndTime = tempEndTime;
+                    if (foundTime)
                         break;
+                    
+                    if (!specialist.Tickets.Any())
+                    {
+                        if (specialist.WorkSchedules.Any())
+                        {
+                            foreach (var schedule in specialist.WorkSchedules)
+                            {
+                                if (schedule.EndTime >= date.TimeOfDay)
+                                {
+                                    foundTime = true;
+                                    specialistId = specialist.Id;
+                                    break;
+                                }
+                            }
+                        }
                     }
-                }
+                    else
+                    {
+                        if (specialist.WorkSchedules.Any())
+                        {
+                            // looking for time in between visits
+                            for (int i = 0; i < specialist.Tickets.Count; i++)
+                            {
+                                var ticket = specialist.Tickets.ElementAt(i);
+                                
+                                // last ticket
+                                if (i + 1 == specialist.Tickets.Count)
+                                {
+                                    foreach(var schedule in specialist.WorkSchedules)
+                                    {
+                                        if (date.TimeOfDay >= schedule.StartTime &&
+                                            date.TimeOfDay <= schedule.EndTime)
+                                        {
 
-                if (plannedEndTime.HasValue && plannedStartTime.HasValue)
+                                            if (earliestTime == null || ticket.PlannedEndTime < earliestTime)
+                                            {
+                                                earliestTime = ticket.PlannedEndTime;
+                                                specialistId = specialist.Id;
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    var nextTicket = specialist.Tickets.ElementAt(i + 1);
+                                    
+                                    // if fits between times
+                                    if (date >= nextTicket.PlannedStartTime &&
+                                        date.AddMinutes(DEFAULT_MEETING_LENGTH) <= nextTicket.PlannedEndTime)
+                                    {
+                                        if (earliestTime == null || ticket.PlannedEndTime < earliestTime)
+                                        {
+                                            earliestTime = date;
+                                            specialistId = specialist.Id;
+                                        }
+                                    }
+                                }
+                            }
+                        } 
+                    }
+                };
+
+                if (earliestTime != null)
                 {
-                    var id = await _repo.AddTicket(new Ticket(
+                    var ticketNumber = await _repo.GetLargestTicketNumber() + 1;
+
+                    await _repo.AddTicket(new Ticket(
                         System.Guid.NewGuid().ToString(),
-                        newNumber,
-                        plannedStartTime.Value,
-                        plannedEndTime.Value,
-                        data.SpecialistId,
-                        data.CustomerName));
+                        ticketNumber,
+                        earliestTime.Value,
+                        earliestTime.Value.AddMinutes(DEFAULT_MEETING_LENGTH),
+                        specialistId,
+                        customerName
+                    ));
 
-                    return Ok(id);
+                    return Ok(earliestTime.Value.ToString());
                 }
-
-                return new ObjectResult("Sorry, we could not find a time for meeting this week.") {StatusCode = 500};
+                
+                return new ObjectResult(NO_TIME_LEFT) {StatusCode = 500};
             }
             catch (Exception e)
             {
@@ -117,6 +153,5 @@ namespace QueueTickets.Controllers
                 return new ObjectResult("Failed to cancel the meeting.") { StatusCode = 500 };
             }
         }
-      
     }
 }

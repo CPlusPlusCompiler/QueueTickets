@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using QueueTickets.Entities;
+using QueueTickets.Helpers;
 using QueueTickets.Models;
 
 namespace QueueTickets.Repositories
@@ -58,11 +60,47 @@ namespace QueueTickets.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // public async Task<IEnumerable<Ticket>> GetActiveTickets()
-        // {
-        //     return await _context.Tickets
-        //         .Where(t => t.Status == ReservationStatus.WAITING)
-        //         .ToListAsync();
-        // }
+        
+        public async Task<List<Specialist>> GetSpecialistsWithData(int dayOfWeek, TimeSpan timeFrom )
+        {
+            var specialists = await _context.Specialists
+                .Include(s => s.WorkSchedules.Where(sc => 
+                    sc.DayOfWeek == dayOfWeek && sc.EndTime >= timeFrom ))
+                .Include(s => s.Tickets.Where(t =>
+                    t.Status == VisitStatus.WAITING)
+                    .OrderBy(t => t.EndTime)
+                    .ThenBy(t => t.PlannedEndTime))
+                .ToListAsync();
+            
+                return  specialists;            
+        }
+        
+        
+        public async Task<long> GetLargestTicketNumber()
+        {
+            var maxNumber = 0L;
+            if(_context.Tickets.Any())
+                maxNumber = await _context.Tickets.MaxAsync(t => t.TicketNumber);
+            
+            return maxNumber;
+        }
+
+        public async Task<List<Ticket>> GetWaitingVisits()
+        {
+            return await _context.Tickets
+                .Where(t =>
+                    t.Status == VisitStatus.WAITING)
+                .OrderBy(t => t.EndTime)
+                .ThenBy(t => t.PlannedEndTime)
+                .ToListAsync();
+        }
+
+        
+        public async Task<List<WorkSchedule>> GetSchedules(int dayOfWeek, TimeSpan timeFrom)
+        {
+            return await _context.WorkSchedules
+                .Where(sc => sc.DayOfWeek == dayOfWeek && sc.EndTime >= timeFrom)
+                .ToListAsync();
+        }
     }
 }
