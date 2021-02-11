@@ -99,12 +99,14 @@ namespace QueueTickets.Repositories
         private string GenerateJwtToken(Specialist user)
         {
             // generating token for one day. should be even shorter in real life, but for simplicity this will do for now.
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]));    
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);    
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[] { new Claim("id", user.Id.ToString()) };
     
             var token = new JwtSecurityToken(_config["Jwt:Issuer"],    
                 _config["Jwt:Issuer"],    
-                null,    
+                claims,    
                 expires: DateTime.Now.AddDays(1),    
                 signingCredentials: credentials);    
     

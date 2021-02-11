@@ -31,6 +31,9 @@
 
     <ItemGroup>
       <TypeScriptCompile Include="ClientApp\src\App.tsx" />
+      <TypeScriptCompile Include="ClientApp\src\components\CustomerPage.tsx" />
+      <TypeScriptCompile Include="ClientApp\src\components\SpecialistControlPanelPage.tsx" />
+      <TypeScriptCompile Include="ClientApp\src\components\SpecialistLoginPage.tsx" />
       <TypeScriptCompile Include="ClientApp\src\index.tsx" />
     </ItemGroup>
 
@@ -43,6 +46,12 @@
       <Compile Remove="Migrations\20210206153532_InitialPostgreSQL.cs" />
       <Compile Remove="Migrations\20210206153532_InitialPostgreSQL.Designer.cs" />
       <Compile Remove="Migrations\TicketContextModelSnapshot.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="ClientApp\src\components\CustomerPage.tsx" />
+      <None Remove="ClientApp\src\components\SpecialistControlPanelPage.tsx" />
+      <None Remove="ClientApp\src\components\SpecialistLoginPage.tsx" />
     </ItemGroup>
 
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

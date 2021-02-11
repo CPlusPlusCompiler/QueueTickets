@@ -34,7 +34,7 @@ namespace QueueTickets.Entities
         public string CustomerName { get; set; }
 
         [Required]
-        public ReservationStatus Status { get; set; }
+        public VisitStatus Status { get; set; }
         public Ticket() {}
 
         public Ticket(string uuid, long ticketNumber, DateTime plannedStartTime, DateTime plannedEndTime,
@@ -48,11 +48,11 @@ namespace QueueTickets.Entities
             EndTime = null;
             SpecialistId = specialistId;
             CustomerName = customerName;
-            Status = ReservationStatus.WAITING;
+            Status = VisitStatus.WAITING;
         }
     }
 
-    public enum ReservationStatus
+    public enum VisitStatus
     {
         WAITING,
         VISITING,

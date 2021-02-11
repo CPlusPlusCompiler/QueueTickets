@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Route } from 'react-router';
-
+import SpecialistControlPanelPage from './components/SpecialistControlPanelPage';
 import './custom.css'
 
 
@@ -8,7 +8,7 @@ import './custom.css'
 const App: React.FC = props => {
     return (
         <div className="App">
-            <p>test test lololol</p>
+            {SpecialistControlPanelPage()}
         </div>
     )
 }
