@@ -112,17 +112,17 @@ namespace QueueTickets.Controllers
                 if (earliestTime != null)
                 {
                     var ticketNumber = await _repo.GetLargestTicketNumber() + 1;
-
-                    await _repo.AddTicket(new Ticket(
+                    var ticket = new Ticket(
                         System.Guid.NewGuid().ToString(),
                         ticketNumber,
                         earliestTime.Value,
                         earliestTime.Value.AddMinutes(DEFAULT_MEETING_LENGTH),
                         specialistId,
                         customerName
-                    ));
-
-                    return Ok(earliestTime.Value.ToString());
+                    ); 
+                    
+                    await _repo.AddTicket(ticket);
+                    return Ok(ticket);
                 }
                 
                 return new ObjectResult(NO_TIME_LEFT) {StatusCode = 500};

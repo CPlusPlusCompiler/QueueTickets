@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QueueTickets.Models;
 using System.Linq;
 using System.Threading.Tasks;
+using QueueTickets.Entities;
 
 namespace QueueTickets.Repositories
 {
@@ -19,7 +20,7 @@ namespace QueueTickets.Repositories
             var currentVisit = await _context.Tickets
                 .Where(t => t.SpecialistId == specialistId
                 && t.Status == Entities.VisitStatus.VISITING)
-                .FirstAsync();
+                .FirstOrDefaultAsync();
 
             var upcomingVisits = await _context.Tickets
                 .Where(t => t.SpecialistId == specialistId
