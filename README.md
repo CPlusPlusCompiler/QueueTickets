@@ -19,6 +19,8 @@ localhost:5001/
 ```
 
 ##### Reserve a time for a meeting
+You can reserve a meeting for current day only. The employees may have varying schedules, so that is taken into account as well. This method tries to distribute work loads equally between employees.
+
 ```sh
 POST
 api/Meetings/BookMeeting
